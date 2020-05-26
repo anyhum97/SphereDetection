@@ -14,6 +14,15 @@ const float DUTY_CYCLE = 0.15f;	// Percentage of points to use [0..1];
 float size1 = 0.0f;
 float size2 = 0.0f;
 float size3 = 0.0f;
+	
+float min1 = 0.0f;
+float max1 = 0.0f;
+
+float min2 = 0.0f;
+float max2 = 0.0f;
+
+float min3 = 0.0f;
+float max3 = 0.0f;
 
 struct float3
 {
@@ -245,14 +254,14 @@ void LoadFile(vector3f* selected_points)
 
 	// Determine the linear dimensions for greater reliability
 
-	float min1 = FLT_MAX;
-	float max1 = -FLT_MAX;
+	min1 = FLT_MAX;
+	max1 = -FLT_MAX;
 
-	float min2 = FLT_MAX;
-	float max2 = -FLT_MAX;
+	min2 = FLT_MAX;
+	max2 = -FLT_MAX;
 
-	float min3 = FLT_MAX;
-	float max3 = -FLT_MAX;
+	min3 = FLT_MAX;
+	max3 = -FLT_MAX;
 
 	while(file1)
 	{
@@ -294,6 +303,8 @@ void LoadFile(vector3f* selected_points)
 	std::ofstream file2("samples.txt");
 
 	// Evenly copy vertex-points:
+	
+	srand(0);
 
 	for(int i=0; i<vertex; ++i)
 	{
@@ -490,7 +501,7 @@ void Detect(vector3f points, unsigned int amount)
 		{
 			for(int j=0; j<vertex && count < 4; ++j)
 			{
-				if(distance[index][j] < r2)
+				if(distance[index][j] < r2 && distance[index][j] > 1.0f)
 				{
 					p4[count] = points[j];
 					++count;
@@ -503,7 +514,7 @@ void Detect(vector3f points, unsigned int amount)
 		float3 center;
 		float radius = 0.0f;
 
-		float trust = Sphere(p4, center, radius, 0.1f);
+		float trust = Sphere(p4, center, radius, 0.5f);
 		
 		sphere sphere1;
 
@@ -511,16 +522,21 @@ void Detect(vector3f points, unsigned int amount)
 		sphere1.radius = radius;
 		sphere1.trust = trust;
 
-		spheres.push_back(sphere1);
+		float size = std::max(size1, std::max(size2, size3));
 
-		file3 << "(";
+		if(radius > 2.0f*mcd && radius < 50.0f && trust > 0.5f)
+		{
+			spheres.push_back(sphere1);
 
-		file3 << center.x << ", ";
-		file3 << center.y << ", ";
-		file3 << center.z << "): ";
+			file3 << "(";
 
-		file3 << radius << ", ";
-		file3 << trust << "\n\n";
+			file3 << center.x << ", ";
+			file3 << center.y << ", ";
+			file3 << center.z << "): ";
+
+			file3 << radius << ", ";
+			file3 << trust << "\n\n";
+		}
 	}
 
 	file3.close();
@@ -547,7 +563,6 @@ int main()
 {
 	vector3f points;
 
-	srand(time(0));
 	LoadFile(&points);
 	Detect(points, 6);
 
