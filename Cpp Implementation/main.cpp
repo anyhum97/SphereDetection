@@ -32,7 +32,7 @@ struct sphere
 
 typedef std::vector<float3> vector3f;
 
-bool Sphere(float3 points[4], float3& center, float& radius, const float eps = 1e-3f)
+float Sphere(float3 points[4], float3& center, float& radius, const float eps = 1e-3f)
 {
 	// This function determines whether the given 4 points lie on the sphere.
 	// If yes, then calculates the center and radius of the sphere.
@@ -80,7 +80,7 @@ bool Sphere(float3 points[4], float3& center, float& radius, const float eps = 1
 
 	if(abs(detA) < eps)
 	{
-		return false;
+		return 0.0f;
 	}
 
 	const float a1 = x1*x1 + y1*y1 + z1*z1;
@@ -186,7 +186,7 @@ bool Sphere(float3 points[4], float3& center, float& radius, const float eps = 1
 
 	radius = 0.5f*sqrt(detX*detX + detY*detY + detZ*detZ - 4.0f*detA*detC)/abs(detA);
 
-	return true;
+	return abs(detA);
 }
 
 void UpdateVertexCount(unsigned int& vertex, unsigned int count)
@@ -322,7 +322,12 @@ void LoadFile(vector3f* selected_points)
 #endif
 }
 
-void Detect(vector3f points)
+bool Compare(sphere sphere1, sphere sphere2)
+{
+	return sphere1.trust > sphere2.trust;
+}
+
+void Detect(vector3f points, unsigned int amount)
 {
 	// This function use vertex-points to detect spheres.
 
@@ -467,7 +472,7 @@ void Detect(vector3f points)
 
 	std::vector<sphere> spheres;
 
-	std::ofstream file3("spheres.txt");
+	std::ofstream file3("unsorted.txt");
 
 	for(int i=0; i<peaks1.size(); ++i)
 	{
@@ -498,26 +503,44 @@ void Detect(vector3f points)
 		float3 center;
 		float radius = 0.0f;
 
-		if(Sphere(p4, center, radius, 5.0f))
-		{
-			sphere sphere1;
+		float trust = Sphere(p4, center, radius, 0.1f);
+		
+		sphere sphere1;
 
-			sphere1.center = center;
-			sphere1.radius = radius;
+		sphere1.center = center;
+		sphere1.radius = radius;
+		sphere1.trust = trust;
 
-			spheres.push_back(sphere1);
+		spheres.push_back(sphere1);
 
-			file3 << "(";
+		file3 << "(";
 
-			file3 << center.x << ", ";
-			file3 << center.y << ", ";
-			file3 << center.z << "): ";
+		file3 << center.x << ", ";
+		file3 << center.y << ", ";
+		file3 << center.z << "): ";
 
-			file3 << radius << "\n\n";
-		}
+		file3 << radius << ", ";
+		file3 << trust << "\n\n";
 	}
 
 	file3.close();
+
+	std::sort(spheres.begin(), spheres.end(), Compare);
+
+	std::ofstream file4("sorted.txt");
+
+	for(int i=0; i<amount && i<spheres.size(); ++i)
+	{
+		file4 << "(";
+
+		file4 << spheres[i].center.x << ", ";
+		file4 << spheres[i].center.y << ", ";
+		file4 << spheres[i].center.z << "): ";
+
+		file4 << spheres[i].radius << "\n\n";
+	}
+
+	file4.close();
 }
 
 int main()
@@ -526,7 +549,7 @@ int main()
 
 	srand(time(0));
 	LoadFile(&points);
-	Detect(points);
+	Detect(points, 6);
 
 	return 0;
 }
