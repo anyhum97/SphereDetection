@@ -11,7 +11,6 @@
 
  <p>
  Task description:<br><br>
-
  Develop an application that receives a polygonal mesh with known topology, without single-disconnected points, maximal number of spheres, and fits the given number of spheres in the input mesh.<br>
  Additional parameters could be RMS distance threshold from the detected spheres.<br>
  The spheres can have different radius.<br>
@@ -28,4 +27,5 @@
 
 <p>
  <img src="picture1.png">
+ <img src="picture2.png">
 </p>
