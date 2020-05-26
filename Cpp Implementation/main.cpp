@@ -5,7 +5,7 @@
 
 #include <Eigen/Geometry>
 
-#define LOG_ENABLE
+//#define LOG_ENABLE
 
 unsigned int vertex = 1024;	// Number of points to use. Represents the power of two.
 
@@ -298,13 +298,13 @@ void LoadFile(vector3f* selected_points)
 
 	UpdateVertexCount(vertex, count);
 
+	srand(0);
+
 #if defined(LOG_ENABLE)
 
 	std::ofstream file2("samples.txt");
 
 	// Evenly copy vertex-points:
-	
-	srand(0);
 
 	for(int i=0; i<vertex; ++i)
 	{
@@ -336,6 +336,29 @@ void LoadFile(vector3f* selected_points)
 bool Compare(sphere sphere1, sphere sphere2)
 {
 	return sphere1.trust > sphere2.trust;
+}
+
+bool near(const float a, const float b, const float e = 1e-3f)
+{
+	if(a + e >= b && a - e <= b)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool Equals(sphere sphere1, sphere sphere2)
+{
+	//return (near(sphere1.center.x, sphere2.center.x) &&
+	//		near(sphere1.center.y, sphere2.center.y) &&
+	//		near(sphere1.center.z, sphere2.center.z) &&
+	//		near(sphere1.radius, sphere2.radius));
+
+	return (sphere1.center.x == sphere2.center.x) &&
+		   (sphere1.center.y == sphere2.center.y) &&
+		   (sphere1.center.z == sphere2.center.z) &&
+		   (sphere1.radius == sphere2.radius);
 }
 
 void Detect(vector3f points, unsigned int amount)
@@ -483,8 +506,6 @@ void Detect(vector3f points, unsigned int amount)
 
 	std::vector<sphere> spheres;
 
-	std::ofstream file3("unsorted.txt");
-
 	for(int i=0; i<peaks1.size(); ++i)
 	{
 		float3 p4[4];
@@ -527,16 +548,22 @@ void Detect(vector3f points, unsigned int amount)
 		if(radius > 2.0f*mcd && radius < 50.0f && trust > 0.5f)
 		{
 			spheres.push_back(sphere1);
-
-			file3 << "(";
-
-			file3 << center.x << ", ";
-			file3 << center.y << ", ";
-			file3 << center.z << "): ";
-
-			file3 << radius << ", ";
-			file3 << trust << "\n\n";
 		}
+	}
+
+	spheres.erase(std::unique(spheres.begin(), spheres.end(), Equals), spheres.end());
+
+	std::ofstream file3("unsorted.txt");
+
+	for(int i=0; i<spheres.size(); ++i)
+	{
+		file3 << "(";
+
+		file3 << spheres[i].center.x << ", ";
+		file3 << spheres[i].center.y << ", ";
+		file3 << spheres[i].center.z << "): ";
+
+		file3 << spheres[i].radius << "\n\n";
 	}
 
 	file3.close();
