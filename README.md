@@ -12,17 +12,17 @@ Environment:<br>
 <p>
 Task description:<br>
  
-Develop an application that receives a polygonal mesh with known topology, without single-disconnected points, maximal number of spheres, and fits the given number of spheres in the input mesh.<br><br>
-Additional parameters could be RMS distance threshold from the detected spheres.<br><br>
-The spheres can have different radius.<br><br>
-The application outputs the center and radius for each sphere.<br><br>
+Develop an application that receives a polygonal mesh with known topology, without single-disconnected points, maximal number of spheres, and fits the given number of spheres in the input mesh.<br>
+Additional parameters could be RMS distance threshold from the detected spheres.<br>
+The spheres can have different radius.<br>
+The application outputs the center and radius for each sphere.<br>
 </p>
 
 <p>
 Additional requirements:<br>	
-- For a given example mesh algorithm should fit 5 spheres in less then 1 second (excluding I/O operations) on CPU Core i7 3Ghz)<br><br>
-- Production-grade code<br><br>
-- Cross-platform solution<br><br>
+- For a given example mesh algorithm should fit 5 spheres in less then 1 second (excluding I/O operations) on CPU Core i7 3Ghz)<br>
+- Production-grade code<br>
+- Cross-platform solution<br>
 </p>
 
 </p>
