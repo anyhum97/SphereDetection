@@ -38,5 +38,5 @@
  (118.667, -62.3123, -1.53323): 38.342<br>
  (-79.3981, -71.0953, -3.86543): 45.195<br>
  (113.684, 76.0787, -21.11): 41.055<br><br>
- <a href="Cpp Implementation\points.txt" points.txt </a> used<br>
+ Cpp Implementation\points.txt used<br>
 </p>
