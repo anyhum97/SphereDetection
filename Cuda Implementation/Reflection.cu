@@ -1,11 +1,19 @@
-#pragma once
-
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
 #include <iostream>
 
-#include "Reflection.h"
+////////////////////////////////////////////////////////////////////////
+
+template <typename Type>
+
+struct Reflection
+{
+	Type* host = nullptr;
+	Type* device = nullptr;
+
+	unsigned int size = 0;
+};
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -48,7 +56,7 @@ Reflection<Type> Malloc(const unsigned int count)
 
 template <typename Type>
 
-Reflection<Type> Malloc(Type* hostBuffer, const unsigned int count, bool send = false)
+Reflection<Type> Malloc(Type* hostBuffer, const unsigned int count, bool send)
 {
 	const unsigned int size = count * sizeof(Type);
 
@@ -233,7 +241,7 @@ Type* Device(Reflection<Type>& reflection)
 
 template <typename Type>
 
-void Show(Reflection<Type>& reflection, unsigned int count = 0)
+void Show(Reflection<Type>& reflection, unsigned int count)
 {
 	if(!IsValid(reflection))
 	{

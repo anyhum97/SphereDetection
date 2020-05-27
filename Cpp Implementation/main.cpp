@@ -477,15 +477,15 @@ void Detect(vector3f points, unsigned int nPoints)
 		{
 			if(i != j)
 			{
-				const float distance = sqrt((points[i].x - points[j].x)*(points[i].x - points[j].x) + 
+				const float distance1 = sqrt((points[i].x - points[j].x)*(points[i].x - points[j].x) + 
 											(points[i].y - points[j].y)*(points[i].y - points[j].y) + 
 											(points[i].z - points[j].z)*(points[i].z - points[j].z));
 
-				buf.push_back(distance);
+				buf.push_back(distance1);
 
-				if(distance < min)
+				if(distance1 < min)
 				{
-					min = distance;
+					min = distance1;
 				}
 			}
 			else

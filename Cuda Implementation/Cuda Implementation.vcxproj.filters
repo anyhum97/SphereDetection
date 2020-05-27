@@ -4,29 +4,29 @@
     <CudaCompile Include="kernel.cu">
       <Filter>Source Code</Filter>
     </CudaCompile>
-    <CudaCompile Include="Reflection.h">
-      <Filter>headers</Filter>
-    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Code">
       <UniqueIdentifier>{70755187-6fe2-4d4b-8248-49ed548e0616}</UniqueIdentifier>
     </Filter>
-    <Filter Include="headers">
+    <Filter Include="Reflection">
+      <UniqueIdentifier>{e2fe6676-0544-4ed2-acf5-8fbddada7e67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ply">
       <UniqueIdentifier>{5fee5ddc-b03e-4fa4-a1e1-efcb6611b75b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ply.h">
-      <Filter>headers</Filter>
-    </ClInclude>
+    <ClCompile Include="ply.cpp">
+      <Filter>ply</Filter>
+    </ClCompile>
+    <ClCompile Include="Reflection.cu">
+      <Filter>Reflection</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ply.cpp">
-      <Filter>Source Code</Filter>
-    </ClCompile>
-    <ClCompile Include="Reflection.cpp">
-      <Filter>Source Code</Filter>
-    </ClCompile>
+    <ClInclude Include="ply.h">
+      <Filter>ply</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
