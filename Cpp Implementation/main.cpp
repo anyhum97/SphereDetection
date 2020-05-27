@@ -575,6 +575,9 @@ void Detect(vector3f points, unsigned int nPoints)
 	// For this select three more points in the neighborhood and 
 	// call the function Sphere.
 
+	// We know the topology, so we will only process the maxima.
+	// If the spheres were concave we would also process the minima.
+
 	std::vector<sphere> spheres;
 
 	for(int i=0; i<peaks1.size(); ++i)
@@ -659,7 +662,7 @@ void Detect(vector3f points, unsigned int nPoints)
 
 	std::sort(spheres.begin(), spheres.end(), TrustCompare);
 
-	// Write sorted data to the file:
+	// Write solution to the file:
 
 	std::ofstream file4("solution.txt");
 
