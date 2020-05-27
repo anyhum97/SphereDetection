@@ -5,11 +5,11 @@
 
 #include <Eigen/Geometry>
 
-//#define LOG_ENABLE
+#define LOG_ENABLE
 
 unsigned int vertex = 1024;	// Number of points to use. Represents the power of two.
 
-const float DUTY_CYCLE = 0.15f;	// Percentage of points to use [0..1];
+const float DUTY_CYCLE = 0.05f;	// Percentage of points to use [0..1];
 
 float size1 = 0.0f;
 float size2 = 0.0f;
@@ -40,6 +40,11 @@ struct sphere
 };
 
 typedef std::vector<float3> vector3f;
+
+float len(float3 point)
+{
+	return sqrt((point.x*point.x) + (point.y*point.y) + (point.z*point.z));
+}
 
 float Sphere(float3 points[4], float3& center, float& radius, const float eps = 1e-3f)
 {
@@ -335,6 +340,14 @@ void LoadFile(vector3f* selected_points)
 
 bool Compare(sphere sphere1, sphere sphere2)
 {
+	const float value1 = len(sphere1.center) + sphere1.radius;
+	const float value2 = len(sphere2.center) + sphere2.radius;
+
+	return value1 < value2;
+}
+
+bool TrustCompare(sphere sphere1, sphere sphere2)
+{
 	return sphere1.trust > sphere2.trust;
 }
 
@@ -516,7 +529,7 @@ void Detect(vector3f points, unsigned int amount)
 
 		unsigned int count = 1;
 
-		float r2 = 3.0f*mcd;
+		float r2 = 5.0f*mcd;
 
 		while(count != 4)
 		{
@@ -551,6 +564,8 @@ void Detect(vector3f points, unsigned int amount)
 		}
 	}
 
+	std::sort(spheres.begin(), spheres.end(), Compare);
+
 	spheres.erase(std::unique(spheres.begin(), spheres.end(), Equals), spheres.end());
 
 	std::ofstream file3("unsorted.txt");
@@ -568,7 +583,7 @@ void Detect(vector3f points, unsigned int amount)
 
 	file3.close();
 
-	std::sort(spheres.begin(), spheres.end(), Compare);
+	std::sort(spheres.begin(), spheres.end(), TrustCompare);
 
 	std::ofstream file4("sorted.txt");
 
