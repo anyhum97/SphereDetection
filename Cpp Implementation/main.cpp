@@ -5,7 +5,7 @@
 
 #include <Eigen/Geometry>
 
-#define LOG_ENABLE
+//#define LOG_ENABLE
 
 unsigned int vertex = 1024;	// Number of points to use. Represents the power of two.
 
@@ -14,7 +14,7 @@ const float DUTY_CYCLE = 0.05f;	// Percentage of points to use [0..1];
 float size1 = 0.0f;
 float size2 = 0.0f;
 float size3 = 0.0f;
-	
+
 float min1 = 0.0f;
 float max1 = 0.0f;
 
