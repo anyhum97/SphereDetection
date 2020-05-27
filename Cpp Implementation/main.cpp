@@ -222,7 +222,7 @@ bool Compare(sphere sphere1, sphere sphere2)
 
 bool TrustCompare(sphere sphere1, sphere sphere2)
 {
-	// This function compares sphere trust parameter for sorting.
+	// This function compares sphere trust factor for sorting.
 
 	return sphere1.trust > sphere2.trust;
 }
@@ -251,7 +251,7 @@ void UpdateVertexCount(unsigned int& vertex, unsigned int count)
 	* This will speed up the algorithm however artifacts may appear.
 	*/
 
-	// vertex - how many points to use.
+	// vertex is an amount of points to use.
 	// This value must be a power of two to more efficiently 
 	// parallelize tasks on the CUDA version.
 
@@ -520,9 +520,9 @@ void Detect(vector3f points, unsigned int nPoints)
 	delete[] IsMax;
 	delete[] IsMin;
 
-	// Ñheck if the found extrema are points of the sphere
+	// Check if the found extrema are points of the sphere
 	// For this select three more points in the neighborhood and 
-	// ñall the function Sphere.
+	// call the function Sphere.
 
 	std::vector<sphere> spheres;
 
@@ -577,9 +577,9 @@ void Detect(vector3f points, unsigned int nPoints)
 
 	spheres.erase(std::unique(spheres.begin(), spheres.end(), Equals), spheres.end());
 
-	// Write unsorted data to the file:
-
 #if defined(LOG_ENABLE)
+
+	// Write unsorted data to the file:
 
 	std::ofstream file3("unsorted.txt");
 
