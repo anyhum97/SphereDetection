@@ -27,6 +27,42 @@ struct float3
 	float x;
 	float y;
 	float z;
+
+	float3()
+	{
+		this->x = 0.0f;
+		this->y = 0.0f;
+		this->z = 0.0f;
+	}
+
+	float3(float x, float y, float z)
+	{
+		this->x = x;
+		this->y = y;
+		this->z = z;
+	}
+
+	bool operator == (float3 other)
+	{
+		bool equals = true;
+
+		equals = equals && this->x == other.x;
+		equals = equals && this->y == other.y;
+		equals = equals && this->z == other.z;
+
+		return equals;
+	}
+
+	bool operator != (float3 other)
+	{
+		bool equals = true;
+
+		equals = equals && this->x == other.x;
+		equals = equals && this->y == other.y;
+		equals = equals && this->z == other.z;
+
+		return !equals;
+	}
 };
 
 struct sphere
@@ -241,6 +277,21 @@ bool Equals(sphere sphere1, sphere sphere2)
 	isEquals = isEquals && (sphere1.radius == sphere2.radius);
 
 	return isEquals;
+}
+
+bool Contains(float3 points[4], float3 point, unsigned int count)
+{
+	// This function determines whether the 4 points contain the specified point.
+
+	for(unsigned int i=0; i<count && i<4; ++i)
+	{
+		if(points[i] == point)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void UpdateVertexCount(unsigned int& vertex, unsigned int count)
@@ -535,17 +586,23 @@ void Detect(vector3f points, unsigned int nPoints)
 		p4[0] = points[index];
 
 		unsigned int count = 1;
-
-		float r2 = 5.0f*mcd;
+		
+		float r2 = 0.0f;
+		float r3 = 5.0f*mcd;
 
 		while(count != 4)
 		{
 			for(int j=0; j<vertex && count < 4; ++j)
 			{
-				if(distance[index][j] < r2 && distance[index][j] > 1.0f)
+				const float dist = distance[index][j];
+				
+				if(dist > r2 && dist <= r3 && dist > 1.0f)
 				{
-					p4[count] = points[j];
-					++count;
+					if(!Contains(p4, points[j], count))
+					{
+						p4[count] = points[j];
+						++count;
+					}
 				}
 			}
 
