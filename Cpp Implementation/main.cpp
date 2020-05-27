@@ -30,8 +30,8 @@ struct sphere
 {
 	float3 center;
 
-	float radius;
-	float trust;
+	float radius = 0.0f;
+	float trust = 0.0f;
 };
 
 float Len(float3 point)

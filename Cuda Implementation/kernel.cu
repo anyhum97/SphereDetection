@@ -7,7 +7,20 @@
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
-#include "Reflection.cu"
+#include "Reflection.h"
+#include "ply.h"
+
+using namespace ply;
+
+unsigned int vertex = 1024;
+
+struct sphere
+{
+	ply::float3 center;
+
+	float radius = 0.0f;
+	float trust = 0.0f;
+};
 
 cudaEvent_t start;
 cudaEvent_t stop;
@@ -48,7 +61,7 @@ void Test()
 	std::cout << time << "ms [OK]\n\n";
 }
 
-void main()
+int main()
 {
     CudaMalloc();
 
@@ -59,4 +72,5 @@ void main()
     ////////////////////////////////////////////////////////////////////////
 
     CudaFree();
+	return 0;
 }
