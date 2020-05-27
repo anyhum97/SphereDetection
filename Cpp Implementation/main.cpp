@@ -1,19 +1,22 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <ctime>
 
 #include <Eigen/Geometry>
 
-#define LOG_ENABLE
+#include "ply.h"
 
-unsigned int vertex = 1024;	// Number of points to use. Represents the power of two.
+using namespace ply;
 
-const float DUTY_CYCLE = 0.05f;	// Percentage of points to use [0..1];
+//#define LOG_ENABLE
+
+unsigned int vertex = 1024;
 
 float size1 = 0.0f;
 float size2 = 0.0f;
 float size3 = 0.0f;
-	
+
 float min1 = 0.0f;
 float max1 = 0.0f;
 
@@ -23,13 +26,6 @@ float max2 = 0.0f;
 float min3 = 0.0f;
 float max3 = 0.0f;
 
-struct float3
-{
-	float x;
-	float y;
-	float z;
-};
-
 struct sphere
 {
 	float3 center;
@@ -38,18 +34,20 @@ struct sphere
 	float trust;
 };
 
-typedef std::vector<float3> vector3f;
-
-float len(float3 point)
+float Len(float3 point)
 {
+	// This function calculates the distance from the point to the origin.
+
 	return sqrt((point.x*point.x) + (point.y*point.y) + (point.z*point.z));
 }
 
 float Sphere(float3 points[4], float3& center, float& radius, const float eps = 1e-3f)
 {
-	// This function determines whether the given 4 points lie on the sphere.
-	// If yes, then calculates the center and radius of the sphere.
-	// For more information check https://mathworld.wolfram.com/Circumsphere.html
+	/* This function calculates with what reliability 4 points belong to the sphere.
+	* If this value exceeds the threshold, then the coordinate of the center of the 
+	* sphere and its radius are calculated.
+	* For more information check https://mathworld.wolfram.com/Circumsphere.html
+	*/
 
 	const float x1 = points[0].x;
 	const float y1 = points[0].y;
@@ -91,8 +89,13 @@ float Sphere(float3 points[4], float3& center, float& radius, const float eps = 
 
 	const float detA = a.determinant();
 
-	if(abs(detA) < eps)
+	const float trust = abs(detA);
+
+	if(trust < eps)
 	{
+		// This value does not exceed the threshold.
+		// This means that the points do not lie on the sphere.
+
 		return 0.0f;
 	}
 
@@ -197,24 +200,76 @@ float Sphere(float3 points[4], float3& center, float& radius, const float eps = 
 	center.y = 0.5f*detY/detA;
 	center.z = 0.5f*detZ/detA;
 
-	radius = 0.5f*sqrt(detX*detX + detY*detY + detZ*detZ - 4.0f*detA*detC)/abs(detA);
+	radius = 0.5f*sqrt(detX*detX + detY*detY + detZ*detZ - 4.0f*detA*detC)/trust;
 
-	return abs(detA);
+	return trust;
+}
+
+bool Compare(sphere sphere1, sphere sphere2)
+{
+	// This function compares sphere parameters for sorting.
+
+	const float value1 = Len(sphere1.center) + sphere1.radius;
+	const float value2 = Len(sphere2.center) + sphere2.radius;
+
+	return value1 < value2;
+}
+
+bool TrustCompare(sphere sphere1, sphere sphere2)
+{
+	// This function compares sphere trust factor for sorting.
+
+	return sphere1.trust > sphere2.trust;
+}
+
+bool Equals(sphere sphere1, sphere sphere2)
+{
+	// This function determines whether the parameters of two spheres are the same.
+	// Used to exclude repetitions.
+
+	bool isEquals = true;
+
+	isEquals = isEquals && (sphere1.center.x == sphere2.center.x);
+	isEquals = isEquals && (sphere1.center.y == sphere2.center.y);
+	isEquals = isEquals && (sphere1.center.z == sphere2.center.z);
+
+	isEquals = isEquals && (sphere1.radius == sphere2.radius);
+
+	return isEquals;
+}
+
+bool Contains(float3 points[4], float3 point, unsigned int count)
+{
+	// This function determines whether the 4 points contain the specified point.
+
+	for(unsigned int i=0; i<count && i<4; ++i)
+	{
+		if(points[i] == point)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void UpdateVertexCount(unsigned int& vertex, unsigned int count)
 {
-	// This function determines how many vertex-points to use.
-	
-	// Monte-Carlo optimization:
-	// We will use only DUTY_CYCLE of loaded points.
+	/* This function determines how many vertex-points to use.
+	* In C++ version we will use the Monte-Carlo approach:
+	* This means that we will use only part of the loaded points.
+	* This will speed up the algorithm however artifacts may appear.
+	*/
 
-	// 1) vertex - how many points to use.
+	// vertex is an amount of points to use.
 	// This value must be a power of two to more efficiently 
 	// parallelize tasks on the CUDA version.
 
-	// 2) count is a total number of loaded points.
+	// count is a total number of loaded points.
 	// This value cannot be less than 512.
+
+	// Percentage of points to use [0..1];
+	const float DUTY_CYCLE = 0.05f;	
 
 	if(count < vertex)
 	{
@@ -240,7 +295,7 @@ void UpdateVertexCount(unsigned int& vertex, unsigned int count)
 	}
 }
 
-void LoadFile(vector3f* selected_points)
+void LoadTextFile(vector3f* selected_points)
 {
 	// This function loads vertex-points and select points to use.
 
@@ -306,7 +361,7 @@ void LoadFile(vector3f* selected_points)
 
 #if defined(LOG_ENABLE)
 
-	std::ofstream file2("samples.txt");
+	std::ofstream file2("samples1.txt");
 
 	// Evenly copy vertex-points:
 
@@ -337,43 +392,64 @@ void LoadFile(vector3f* selected_points)
 #endif
 }
 
-bool Compare(sphere sphere1, sphere sphere2)
+void LoadPlyFile(vector3f* selected_points)
 {
-	const float value1 = len(sphere1.center) + sphere1.radius;
-	const float value2 = len(sphere2.center) + sphere2.radius;
+	vector3f points;
 
-	return value1 < value2;
-}
-
-bool TrustCompare(sphere sphere1, sphere sphere2)
-{
-	return sphere1.trust > sphere2.trust;
-}
-
-bool near(const float a, const float b, const float e = 1e-3f)
-{
-	if(a + e >= b && a - e <= b)
+	if(!LoadVertex(&points, "Test_Sphere_Detector.ply"))
 	{
-		return true;
+		vertex = 0;
+		return;
 	}
 
-	return false;
+	unsigned int count = points.size();
+
+	// Request at least 512 points:
+
+	if(count < 512)	
+	{	
+		count = 0;
+		return;
+	}
+
+	UpdateVertexCount(vertex, count);
+
+	srand(0);
+
+#if defined(LOG_ENABLE)
+
+	std::ofstream file2("samples2.txt");
+
+	// Evenly copy vertex-points:
+
+	for(int i=0; i<vertex; ++i)
+	{
+		float3 point = points[rand()%count];
+
+		selected_points->push_back(point);
+
+		// We can save selected points in text format to explore:
+
+		file2 << point.x << "\t";
+		file2 << point.y << "\t";
+		file2 << point.z << "\n";
+	}
+
+	file2.close();
+
+#else
+
+	// Evenly copy vertex-points:
+
+	for(int i=0; i<vertex; ++i)
+	{
+		selected_points->push_back(points[rand()%count]);
+	}
+
+#endif
 }
 
-bool Equals(sphere sphere1, sphere sphere2)
-{
-	//return (near(sphere1.center.x, sphere2.center.x) &&
-	//		near(sphere1.center.y, sphere2.center.y) &&
-	//		near(sphere1.center.z, sphere2.center.z) &&
-	//		near(sphere1.radius, sphere2.radius));
-
-	return (sphere1.center.x == sphere2.center.x) &&
-		   (sphere1.center.y == sphere2.center.y) &&
-		   (sphere1.center.z == sphere2.center.z) &&
-		   (sphere1.radius == sphere2.radius);
-}
-
-void Detect(vector3f points, unsigned int amount)
+void Detect(vector3f points, unsigned int nPoints)
 {
 	// This function use vertex-points to detect spheres.
 
@@ -386,7 +462,8 @@ void Detect(vector3f points, unsigned int amount)
 
 	std::vector<std::vector<float>> distance;
 	
-	float mcd = 0.0f; // Middle closest distance.
+	// Middle closest distance
+	float mcd = 0.0f; 
 
 	float counter = 0.0f;
 
@@ -510,11 +587,12 @@ void Detect(vector3f points, unsigned int amount)
 	delete[] IsMax;
 	delete[] IsMin;
 
-	// Ñheck if the found extrema are points of the sphere
+	// Check if the found extrema are points of the sphere
 	// For this select three more points in the neighborhood and 
-	// ñall the function Sphere();
+	// call the function Sphere.
 
-	// Write to a file found center and radius of spheres.
+	// We know the topology, so we will only process the maxima.
+	// If the spheres were concave we would also process the minima.
 
 	std::vector<sphere> spheres;
 
@@ -527,17 +605,23 @@ void Detect(vector3f points, unsigned int amount)
 		p4[0] = points[index];
 
 		unsigned int count = 1;
-
-		float r2 = 5.0f*mcd;
+		
+		float r2 = 0.0f;
+		float r3 = 5.0f*mcd;
 
 		while(count != 4)
 		{
 			for(int j=0; j<vertex && count < 4; ++j)
 			{
-				if(distance[index][j] < r2 && distance[index][j] > 1.0f)
+				const float dist = distance[index][j];
+				
+				if(dist > r2 && dist <= r3 && dist > 1.0f)
 				{
-					p4[count] = points[j];
-					++count;
+					if(!Contains(p4, points[j], count))
+					{
+						p4[count] = points[j];
+						++count;
+					}
 				}
 			}
 
@@ -563,9 +647,15 @@ void Detect(vector3f points, unsigned int amount)
 		}
 	}
 
+	// Remove repetition:
+
 	std::sort(spheres.begin(), spheres.end(), Compare);
 
 	spheres.erase(std::unique(spheres.begin(), spheres.end(), Equals), spheres.end());
+
+#if defined(LOG_ENABLE)
+
+	// Write unsorted data to the file:
 
 	std::ofstream file3("unsorted.txt");
 
@@ -582,11 +672,17 @@ void Detect(vector3f points, unsigned int amount)
 
 	file3.close();
 
+#endif
+
+	// Sort spheres by the trust factor:
+
 	std::sort(spheres.begin(), spheres.end(), TrustCompare);
 
-	std::ofstream file4("sorted.txt");
+	// Write solution to the file:
 
-	for(int i=0; i<amount && i<spheres.size(); ++i)
+	std::ofstream file4("solution.txt");
+
+	for(int i=0; i<nPoints && i<spheres.size(); ++i)
 	{
 		file4 << "(";
 
@@ -604,7 +700,7 @@ int main()
 {
 	vector3f points;
 
-	LoadFile(&points);
+	LoadPlyFile(&points);
 	Detect(points, 6);
 
 	return 0;
