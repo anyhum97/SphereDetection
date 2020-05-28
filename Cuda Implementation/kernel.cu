@@ -238,7 +238,7 @@ __global__ void Detect(float3* Points, sphere* Spheres1, sphere* Spheres2, const
 
 		const unsigned int attempts1 = count1 / 3;
 
-		unsigned int index = 0;
+		unsigned int counter1 = 0;
 
 		for(unsigned int j=0; j<attempts1 && j<8; ++j)
 		{
@@ -255,18 +255,18 @@ __global__ void Detect(float3* Points, sphere* Spheres1, sphere* Spheres2, const
 
 			if(trust > 2.0f && radius > 10.0f && radius < 60.0f)
 			{
-				local[index] = sphere(center, radius, trust);
-				++index;
+				local[counter1] = sphere(center, radius, trust);
+				++counter1;
 			}				
 		}
 
-		if(index)
+		if(counter1)
 		{
 			sphere best;
 
 			float factor = 0.0f;
 
-			for(unsigned int j=0; j<index; ++j)
+			for(unsigned int j=0; j<counter1; ++j)
 			{
 				if(local[j].trust > factor)
 				{
@@ -285,7 +285,7 @@ __global__ void Detect(float3* Points, sphere* Spheres1, sphere* Spheres2, const
 
 		const unsigned int attempts2 = count2 / 3;
 
-		unsigned int index = 0;
+		unsigned int counter2 = 0;
 
 		for(unsigned int j=0; j<attempts2 && j<8; ++j)
 		{
@@ -302,18 +302,18 @@ __global__ void Detect(float3* Points, sphere* Spheres1, sphere* Spheres2, const
 
 			if(trust > 5.0f && radius > 10.0f && radius < 60.0f)
 			{
-				local[index] = sphere(center, radius, trust);
-				++index;
+				local[counter2] = sphere(center, radius, trust);
+				++counter2;
 			}				
 		}
 
-		if(index)
+		if(counter2)
 		{
 			sphere best;
 
 			float factor = 0.0f;
 
-			for(unsigned int j=0; j<index; ++j)
+			for(unsigned int j=0; j<counter2; ++j)
 			{
 				if(local[j].trust > factor)
 				{
