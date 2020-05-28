@@ -53,17 +53,17 @@ namespace ply
 
 		std::string str(header);
 		
-		int index1 = str.find("ply");
-		int index2 = str.find("PLY");
+		size_t index1 = str.find("ply");
+		size_t index2 = str.find("PLY");
 		
 		if(index1 < 0 && index2 < 0)
 		{
 			return false;
 		}
 
-		int index3 = str.find("vertex")+strlen("vertex");
-		int index4 = str.find('\n', index3);
-		int index5 = str.find("end_header\n")+strlen("end_header\n");
+		size_t index3 = str.find("vertex")+strlen("vertex");
+		size_t index4 = str.find('\n', index3);
+		size_t index5 = str.find("end_header\n")+strlen("end_header\n");
 
 		if(index4-index3 < 3 || index5 < 0)
 		{

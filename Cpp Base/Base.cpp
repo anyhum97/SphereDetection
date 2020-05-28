@@ -10,22 +10,7 @@
 
 using namespace ply;
 
-//#define LOG_ENABLE
-
-unsigned int vertex = 1024;
-
-float size1 = 0.0f;
-float size2 = 0.0f;
-float size3 = 0.0f;
-
-float min1 = 0.0f;
-float max1 = 0.0f;
-
-float min2 = 0.0f;
-float max2 = 0.0f;
-
-float min3 = 0.0f;
-float max3 = 0.0f;
+unsigned int vertex = 0;
 
 struct sphere
 {
@@ -52,6 +37,24 @@ struct sphere
 		this->trust = trust;
 	}
 };
+
+float det3(const float a11, const float a12, const float a13,
+		   const float a21, const float a22, const float a23,
+		   const float a31, const float a32, const float a33)
+{
+	return (a11*a22*a33 + a12*a23*a31 + a13*a21*a32) - (a31*a22*a13 + a32*a23*a11 + a33*a21*a12);
+}
+
+float det4(const float a11, const float a12, const float a13, const float a14,
+		   const float a21, const float a22, const float a23, const float a24,
+		   const float a31, const float a32, const float a33, const float a34,
+		   const float a41, const float a42, const float a43, const float a44)
+{
+	return a11*det3(a22, a23, a24, a32, a33, a34, a42, a43, a44) -
+		   a21*det3(a12, a13, a14, a32, a33, a34, a42, a43, a44) +
+		   a31*det3(a12, a13, a14, a22, a23, a24, a42, a43, a44) - 
+		   a41*det3(a12, a13, a14, a22, a23, a24, a32, a33, a34);
+}
 
 float Sphere1(float3 points[4], float3& center, float& radius, const float eps = 1e-3f)
 {
@@ -101,11 +104,15 @@ float Sphere1(float3 points[4], float3& center, float& radius, const float eps =
 
 	const float detA = a.determinant();
 
+	// trust-factor is a probability that points lie on a sphere.
+	// The larger it is, the better the points fit to the sphere.
+	// trust-factor can be more than 1.0f.
+
 	const float trust = abs(detA);
 
 	if(trust < eps)
 	{
-		// This value does not exceed the threshold.
+		// trust-factor does not exceed the threshold.
 		// This means that the points do not lie on the sphere.
 
 		return 0.0f;
@@ -217,24 +224,6 @@ float Sphere1(float3 points[4], float3& center, float& radius, const float eps =
 	return trust;
 }
 
-float det3(const float a11, const float a12, const float a13,
-		   const float a21, const float a22, const float a23,
-		   const float a31, const float a32, const float a33)
-{
-	return (a11*a22*a33 + a12*a23*a31 + a13*a21*a32) - (a31*a22*a13 + a32*a23*a11 + a33*a21*a12);
-}
-
-float det4(const float a11, const float a12, const float a13, const float a14,
-		   const float a21, const float a22, const float a23, const float a24,
-		   const float a31, const float a32, const float a33, const float a34,
-		   const float a41, const float a42, const float a43, const float a44)
-{
-	return a11*det3(a22, a23, a24, a32, a33, a34, a42, a43, a44) -
-		   a21*det3(a12, a13, a14, a32, a33, a34, a42, a43, a44) +
-		   a31*det3(a12, a13, a14, a22, a23, a24, a42, a43, a44) - 
-		   a41*det3(a12, a13, a14, a22, a23, a24, a32, a33, a34);
-}
-
 float Sphere2(float3 points[4], float3& center, float& radius, const float eps = 1e-3f)
 {
 	const float x1 = points[0].x;
@@ -260,9 +249,13 @@ float Sphere2(float3 points[4], float3& center, float& radius, const float eps =
 
 	const float trust = abs(detA);
 
+	// trust-factor is a probability that points lie on a sphere.
+	// The larger it is, the better the points fit to the sphere.
+	// trust-factor can be more than 1.0f.
+
 	if(trust < eps)
 	{
-		// This value does not exceed the threshold.
+		// trust-factor does not exceed the threshold.
 		// This means that the points do not lie on the sphere.
 
 		return 0.0f;
@@ -311,6 +304,8 @@ bool TrustCompare(sphere sphere1, sphere sphere2)
 
 void LoadPlyFile(vector3f* points)
 {
+	//This function loads all vertex points.
+
 	if(!LoadVertex(points, "Test_Sphere_Detector.ply"))
 	{
 		vertex = 0;
@@ -337,6 +332,15 @@ void Detect(vector3f points, unsigned int nSpheres)
 		const float ay = points[i].y;
 		const float az = points[i].z;
 
+		// Here we want to determine at what distance the point is a 
+		// local max or min of projection to XY plane.
+		// This is necessary to find abnormal peaks.
+
+		// In other situations the axis might be different.
+		// However we know the topology of the problem.
+
+		// In any case, you need to take the projection onto the plane with maximum faces.
+
 		float range1 = FLT_MAX;
 		float range2 = FLT_MAX;
 
@@ -350,6 +354,8 @@ void Detect(vector3f points, unsigned int nSpheres)
 
 			if(bz > az)
 			{
+				// Some point larger than ours means the area of local max is narrowing.
+
 				if(distance < range1)
 				{
 					range1 = distance;
@@ -358,6 +364,8 @@ void Detect(vector3f points, unsigned int nSpheres)
 
 			if(bz < az)
 			{
+				// Some point less than ours means the area of local min is narrowing.
+
 				if(distance < range2)
 				{
 					range2 = distance;
@@ -370,6 +378,8 @@ void Detect(vector3f points, unsigned int nSpheres)
 
 		unsigned int count1 = 0;
 		unsigned int count2 = 0;
+
+		// Here we collect points that lie in the range of the local max and min.
 
 		for(unsigned int j=0; j<vertex; ++j)
 		{
@@ -403,6 +413,10 @@ void Detect(vector3f points, unsigned int nSpheres)
 				}
 			}
 		}
+
+		// Now we can check if the points lie on any sphere
+		// and choose the most reliable case for this we will
+		// compare trust-factors of each case:
 
 		if(count1 >= 6)
 		{
@@ -454,7 +468,10 @@ void Detect(vector3f points, unsigned int nSpheres)
 		}
 	}
 
+	// Sort the found spheres by trust-factor
 	std::sort(spheres.begin(), spheres.end(), TrustCompare);
+
+	// Record all found spheres:
 
 	std::ofstream file1("detected.txt");
 
@@ -471,6 +488,8 @@ void Detect(vector3f points, unsigned int nSpheres)
 	}
 
 	file1.close();
+
+	// Record the best matches:
 
 	std::ofstream file2("solution.txt");
 
