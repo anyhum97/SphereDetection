@@ -35,7 +35,7 @@
  <img src="picture2.png"><br>
   <center><h4>colored map of z-projection on XY plane<h3></center><br>
   
- Look at colored map of z-projection on XY plane. You can see that the centers of the spheres correspond to local maxima.
- 
+ Look at colored map of z-projection on XY plane. You can see that the centers of the spheres correspond to local maximum
+or minimum if the spheres were concave. There we will look for points belonging to the sphere. Then we can check if these points are points of a sphere using https://mathworld.wolfram.com/Circumsphere.html.
   
 </p>
