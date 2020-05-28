@@ -58,7 +58,7 @@ __device__ float det3(const float a11, const float a12, const float a13,
 					  const float a21, const float a22, const float a23,
 					  const float a31, const float a32, const float a33)
 {
-	return a11*a22*a33 + a12*a23*a31 + a13*a21*a32 - a31*a22*a13 - a32*a23*a11 - a33*a21*a12;
+	return (a11*a22*a33 + a12*a23*a31 + a13*a21*a32) - (a31*a22*a13 + a32*a23*a11 + a33*a21*a12);
 }
 
 __device__ float det4(const float a11, const float a12, const float a13, const float a14,
@@ -147,7 +147,7 @@ __device__ float Sphere(float3 points[4], float3& center, float& radius, const f
 
 __global__ void Detect(float3* Points, sphere* Spheres1, sphere* Spheres2, const unsigned int vertex)
 {
-	// <<<Blocks, threads>>>
+	// <<<blocks, threads>>>
 
 	const unsigned int block = blockIdx.x;
     const unsigned int thread = threadIdx.x;
@@ -251,9 +251,9 @@ __global__ void Detect(float3* Points, sphere* Spheres1, sphere* Spheres2, const
 			float3 center;
 			float radius = 0.0f;
 
-			float trust = Sphere(p4, center, radius, 5.0f);
+			float trust = Sphere(p4, center, radius, 2.0f);
 
-			if(trust > 5.0f && radius > 10.0f && radius < 60.0f)
+			if(trust > 2.0f && radius > 10.0f && radius < 60.0f)
 			{
 				local[index] = sphere(center, radius, trust);
 				++index;
