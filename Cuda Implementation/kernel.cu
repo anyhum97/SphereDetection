@@ -10,7 +10,6 @@
 typedef std::vector<float3> vector3f;
 
 #include "Reflection.cu"
-#include "ply.h"
 
 #define __local__ __host__ __device__
 
