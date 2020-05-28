@@ -41,7 +41,7 @@ or minimum if the spheres were concave. There we will look for points belonging 
 
 <p>
 Note that we take the projection onto the XY plane because we know the topology of the problem.<br>
-<\p>
+</p>
 
 <p>
 There are three projects in this repository:<br><br>
