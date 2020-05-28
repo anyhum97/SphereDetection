@@ -30,8 +30,12 @@
 </p>
 
 <p>
-<h1> Solution<h3><br>
- 
+ <h1>Solution<br>
+  
  <img src="picture2.png"><br>
-
+  <center><h4>colored map of z-projection on XY plane<h3></center><br>
+  
+ Look at colored map of z-projection on XY plane. You can see that the centers of the spheres correspond to local maxima.
+ 
+  
 </p>
