@@ -5,6 +5,10 @@
 
 #include <Eigen/Geometry>
 
+#include "ply.h"
+
+using namespace ply;
+
 //#define LOG_ENABLE
 
 unsigned int vertex = 1024;
@@ -22,58 +26,13 @@ float max2 = 0.0f;
 float min3 = 0.0f;
 float max3 = 0.0f;
 
-struct float3
-{
-	float x;
-	float y;
-	float z;
-
-	float3()
-	{
-		this->x = 0.0f;
-		this->y = 0.0f;
-		this->z = 0.0f;
-	}
-
-	float3(float x, float y, float z)
-	{
-		this->x = x;
-		this->y = y;
-		this->z = z;
-	}
-
-	bool operator == (float3 other)
-	{
-		bool equals = true;
-
-		equals = equals && this->x == other.x;
-		equals = equals && this->y == other.y;
-		equals = equals && this->z == other.z;
-
-		return equals;
-	}
-
-	bool operator != (float3 other)
-	{
-		bool equals = true;
-
-		equals = equals && this->x == other.x;
-		equals = equals && this->y == other.y;
-		equals = equals && this->z == other.z;
-
-		return !equals;
-	}
-};
-
 struct sphere
 {
 	float3 center;
 
-	float radius;
-	float trust;
+	float radius = 0.0f;
+	float trust = 0.0f;
 };
-
-typedef std::vector<float3> vector3f;
 
 float Len(float3 point)
 {
@@ -336,7 +295,7 @@ void UpdateVertexCount(unsigned int& vertex, unsigned int count)
 	}
 }
 
-void LoadFile(vector3f* selected_points)
+void LoadTextFile(vector3f* selected_points)
 {
 	// This function loads vertex-points and select points to use.
 
@@ -402,7 +361,64 @@ void LoadFile(vector3f* selected_points)
 
 #if defined(LOG_ENABLE)
 
-	std::ofstream file2("samples.txt");
+	std::ofstream file2("samples1.txt");
+
+	// Evenly copy vertex-points:
+
+	for(int i=0; i<vertex; ++i)
+	{
+		float3 point = points[rand()%count];
+
+		selected_points->push_back(point);
+
+		// We can save selected points in text format to explore:
+
+		file2 << point.x << "\t";
+		file2 << point.y << "\t";
+		file2 << point.z << "\n";
+	}
+
+	file2.close();
+
+#else
+
+	// Evenly copy vertex-points:
+
+	for(int i=0; i<vertex; ++i)
+	{
+		selected_points->push_back(points[rand()%count]);
+	}
+
+#endif
+}
+
+void LoadPlyFile(vector3f* selected_points)
+{
+	vector3f points;
+
+	if(!LoadVertex(&points, "Test_Sphere_Detector.ply"))
+	{
+		vertex = 0;
+		return;
+	}
+
+	unsigned int count = points.size();
+
+	// Request at least 512 points:
+
+	if(count < 512)	
+	{	
+		count = 0;
+		return;
+	}
+
+	UpdateVertexCount(vertex, count);
+
+	srand(0);
+
+#if defined(LOG_ENABLE)
+
+	std::ofstream file2("samples2.txt");
 
 	// Evenly copy vertex-points:
 
@@ -461,15 +477,15 @@ void Detect(vector3f points, unsigned int nPoints)
 		{
 			if(i != j)
 			{
-				const float distance = sqrt((points[i].x - points[j].x)*(points[i].x - points[j].x) + 
+				const float distance1 = sqrt((points[i].x - points[j].x)*(points[i].x - points[j].x) + 
 											(points[i].y - points[j].y)*(points[i].y - points[j].y) + 
 											(points[i].z - points[j].z)*(points[i].z - points[j].z));
 
-				buf.push_back(distance);
+				buf.push_back(distance1);
 
-				if(distance < min)
+				if(distance1 < min)
 				{
-					min = distance;
+					min = distance1;
 				}
 			}
 			else
@@ -641,7 +657,7 @@ void Detect(vector3f points, unsigned int nPoints)
 
 	// Write unsorted data to the file:
 
-	std::ofstream file3("unsorted.txt");
+	std::ofstream file3("sorted.txt");
 
 	for(int i=0; i<spheres.size(); ++i)
 	{
@@ -684,7 +700,7 @@ int main()
 {
 	vector3f points;
 
-	LoadFile(&points);
+	LoadPlyFile(&points);
 	Detect(points, 6);
 
 	return 0;
