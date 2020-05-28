@@ -657,7 +657,7 @@ void Detect(vector3f points, unsigned int nPoints)
 
 	// Write unsorted data to the file:
 
-	std::ofstream file3("unsorted.txt");
+	std::ofstream file3("sorted.txt");
 
 	for(int i=0; i<spheres.size(); ++i)
 	{

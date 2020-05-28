@@ -12,21 +12,10 @@
     <Filter Include="Reflection">
       <UniqueIdentifier>{e2fe6676-0544-4ed2-acf5-8fbddada7e67}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ply">
-      <UniqueIdentifier>{5fee5ddc-b03e-4fa4-a1e1-efcb6611b75b}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ply.cpp">
-      <Filter>ply</Filter>
-    </ClCompile>
     <ClCompile Include="Reflection.cu">
       <Filter>Reflection</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="ply.h">
-      <Filter>ply</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>
