@@ -40,24 +40,34 @@ or minimum if the spheres were concave. There we will look for points belonging 
 </p>
 
 <p>
-Note that we take the projection onto the XY plane because we know the topology of the problem.<br>
+Note that we take the projection onto the XY plane because we know the topology of the problem.<br><br>
 </p>
 
 <p>
 There are three projects in this repository:<br><br>
+ 
  <p>
  1) C++ Monte-Carlo solution (Cpp Implementation):<br><br>
- use only 5% of vertex-points. Works fast but may contain artifacts.<br><br>
+ Only 5% of vertex-points are used. Works fast but may contain artifacts.<br><br>
  </p>
  
 <p>
  2) Base C++ solution (Cpp Base):<br><br>
- use all vertex-points. Is the basis for cuda implementation. Works slowly.<br><br>
+ All vertex-points are used. Is the basis for Cuda implementation. Works slowly.<br><br>
 </p>
- 
+
 <p>
  3) Cuda solution (Cuda Implementation):<br><br>
- use all vertex-points. Works fast.<br><br>
+ All vertex-points are used. Works fast.<br><br>
 </p>
+
+<p>
+ Solution example:<br><br> 
+(-134.116, -0.664237, -5.40004): 22.7613<br>
+(15.7307, 3.03475, -7.52638): 37.9498<br>
+(-86.1651, 67.7646, -13.7158): 38.0584<br>
+(118.568, -62.2806, -1.50465): 38.3407<br>
+(-79.3969, -71.0951, -3.86699): 45.1946<br>
+(112.815, 75.961, -20.0345): 39.8314<br><br>
 
 </p>
